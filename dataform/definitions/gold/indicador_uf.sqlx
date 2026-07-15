@@ -1,0 +1,49 @@
+// Arquivo didático: indicador_uf.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "indicador_uf",
+  description: "Resultados e metas de alfabetização por Unidade da Federação.",
+  assertions: {
+    nonNull: ["ano_resultado", "sigla_uf", "rede"],
+    rowConditions: ["taxa_alfabetizacao IS NULL OR taxa_alfabetizacao BETWEEN 0 AND 100"]
+  },
+  bigquery: { clusterBy: ["ano_meta", "sigla_uf", "rede"] },
+  tags: ["gold", "dashboard", "uf"]
+}
+
+SELECT
+  r.ano AS ano_resultado,
+  m.ano_meta,
+  r.sigla_uf,
+  r.serie,
+  r.rede,
+  r.taxa_alfabetizacao,
+  r.media_portugues,
+  m.meta_alfabetizacao,
+  m.percentual_participacao,
+  r.taxa_alfabetizacao - m.meta_alfabetizacao AS gap_meta_pontos_percentuais,
+  CASE
+    WHEN r.taxa_alfabetizacao IS NULL OR m.meta_alfabetizacao IS NULL THEN "SEM_COMPARACAO"
+    WHEN r.taxa_alfabetizacao >= m.meta_alfabetizacao THEN "META_ATINGIDA"
+    WHEN r.taxa_alfabetizacao >= m.meta_alfabetizacao - 5 THEN "PROXIMO_DA_META"
+    ELSE "ABAIXO_DA_META"
+  END AS status_meta,
+  r.proporcao_aluno_nivel_0,
+  r.proporcao_aluno_nivel_1,
+  r.proporcao_aluno_nivel_2,
+  r.proporcao_aluno_nivel_3,
+  r.proporcao_aluno_nivel_4,
+  r.proporcao_aluno_nivel_5,
+  r.proporcao_aluno_nivel_6,
+  r.proporcao_aluno_nivel_7,
+  r.proporcao_aluno_nivel_8,
+  CURRENT_TIMESTAMP() AS _gold_generated_at
+FROM ${ref("uf_resultado")} r
+LEFT JOIN ${ref("meta_uf")} m
+  ON m.ano_resultado = r.ano
+ AND m.sigla_uf = r.sigla_uf
+ AND m.rede = r.rede

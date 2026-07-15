@@ -1,0 +1,88 @@
+FONTES DE DADOS USADAS NO PROJETO
+
+Este arquivo registra a URL e a URI BigQuery de cada fonte coletada pela aplicação.
+A ingestão é feita no BigQuery público da Base dos Dados. O projeto do aluno paga
+somente o processamento das consultas e armazena as cópias na camada Bronze.
+
+PÁGINA PRINCIPAL DO CONJUNTO
+Nome: Avaliação da Alfabetização
+Organização de origem: Instituto Nacional de Estudos e Pesquisas Educacionais Anísio Teixeira - INEP
+Página na Base dos Dados:
+https://basedosdados.org/dataset/073a39d4-89cf-4068-b1e8-34ed0d9c0b72
+Página institucional do INEP:
+https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/avaliacao-da-alfabetizacao
+
+1. RESULTADOS POR UF
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.uf
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=uf&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.uf
+
+2. RESULTADOS POR MUNICÍPIO
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.municipio
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=municipio&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.municipio
+
+3. DADOS DE ALUNOS - SOMENTE PARA A AMOSTRA FÍSICA
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.alunos
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=alunos&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.alunos_amostra
+Regra aplicada:
+A aplicação usa TABLESAMPLE, limita a até 500 linhas, cria a tabela uma vez e a reutiliza.
+
+4. META NACIONAL
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.meta_alfabetizacao_brasil
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=meta_alfabetizacao_brasil&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.meta_alfabetizacao_brasil
+
+5. METAS POR UF
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.meta_alfabetizacao_uf
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=meta_alfabetizacao_uf&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.meta_alfabetizacao_uf
+
+6. METAS POR MUNICÍPIO
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.meta_alfabetizacao_municipio
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=meta_alfabetizacao_municipio&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.meta_alfabetizacao_municipio
+
+7. DICIONÁRIO DAS TABELAS
+URI BigQuery:
+basedosdados.br_inep_avaliacao_alfabetizacao.dicionario
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_inep_avaliacao_alfabetizacao&t=dicionario&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.dicionario
+
+8. DIRETÓRIO DE MUNICÍPIOS DO BRASIL
+URI BigQuery:
+basedosdados.br_bd_diretorios_brasil.municipio
+URL direta no console BigQuery:
+https://console.cloud.google.com/bigquery?project=basedosdados&p=basedosdados&d=br_bd_diretorios_brasil&t=municipio&page=table
+Destino Bronze:
+SEU_PROJECT_ID.alfabetizacao_bronze.diretorio_municipio
+
+9. EVENTOS DE STREAMING
+Origem:
+Gerados localmente pelo arquivo src/streaming/publisher.py.
+Não são dados oficiais do INEP. São mensagens simuladas apenas para demonstrar Pub/Sub e Dataflow.
+Destino válido:
+SEU_PROJECT_ID.alfabetizacao_bronze.eventos_indicador
+Destino rejeitado:
+SEU_PROJECT_ID.alfabetizacao_bronze.eventos_rejeitados

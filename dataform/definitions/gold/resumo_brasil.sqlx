@@ -1,0 +1,28 @@
+// Arquivo didático: resumo_brasil.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "resumo_brasil",
+  description: "Resumo nacional do indicador e trajetória das metas até 2030.",
+  assertions: { nonNull: ["ano_resultado", "ano_meta", "rede"] },
+  tags: ["gold", "dashboard", "brasil"]
+}
+
+SELECT
+  ano_resultado,
+  ano_meta,
+  rede,
+  taxa_alfabetizacao_base AS taxa_alfabetizacao,
+  meta_alfabetizacao,
+  taxa_alfabetizacao_base - meta_alfabetizacao AS gap_meta_pontos_percentuais,
+  percentual_participacao,
+  CASE
+    WHEN taxa_alfabetizacao_base >= meta_alfabetizacao THEN "META_ATINGIDA"
+    WHEN taxa_alfabetizacao_base >= meta_alfabetizacao - 5 THEN "PROXIMO_DA_META"
+    ELSE "ABAIXO_DA_META"
+  END AS status_meta,
+  CURRENT_TIMESTAMP() AS _gold_generated_at
+FROM ${ref("meta_brasil")}

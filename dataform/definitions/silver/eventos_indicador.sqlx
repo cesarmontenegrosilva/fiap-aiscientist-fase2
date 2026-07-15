@@ -1,0 +1,40 @@
+// Arquivo didático: eventos_indicador.sqlx.
+// Responsabilidade: limpa, padroniza ou integra dados na camada Silver.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.silverDataset,
+  name: "eventos_indicador_tratados",
+  description: "Eventos streaming válidos, deduplicados e normalizados.",
+  assertions: {
+    nonNull: ["id_evento", "id_municipio", "sigla_uf", "ano", "data_evento"],
+    uniqueKey: ["id_evento"],
+    rowConditions: ["taxa_alfabetizacao BETWEEN 0 AND 100"]
+  },
+  bigquery: {
+    partitionBy: "DATE(data_evento)",
+    clusterBy: ["sigla_uf", "id_municipio"]
+  },
+  tags: ["silver", "streaming"]
+}
+
+SELECT
+  SAFE_CAST(id_evento AS STRING) AS id_evento,
+  LPAD(SAFE_CAST(id_municipio AS STRING), 7, '0') AS id_municipio,
+  UPPER(TRIM(SAFE_CAST(sigla_uf AS STRING))) AS sigla_uf,
+  SAFE_CAST(ano AS INT64) AS ano,
+  LOWER(TRIM(SAFE_CAST(rede AS STRING))) AS rede,
+  LOWER(TRIM(SAFE_CAST(serie AS STRING))) AS serie,
+  SAFE_CAST(taxa_alfabetizacao AS FLOAT64) AS taxa_alfabetizacao,
+  SAFE_CAST(meta_alfabetizacao AS FLOAT64) AS meta_alfabetizacao,
+  SAFE_CAST(tipo_evento AS STRING) AS tipo_evento,
+  SAFE_CAST(fonte AS STRING) AS fonte,
+  SAFE_CAST(data_evento AS TIMESTAMP) AS data_evento,
+  SAFE_CAST(data_processamento AS TIMESTAMP) AS data_processamento,
+  SAFE_CAST(pubsub_message_id AS STRING) AS pubsub_message_id
+FROM ${ref("eventos_indicador")}
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY id_evento
+  ORDER BY data_processamento DESC
+) = 1

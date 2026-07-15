@@ -1,0 +1,64 @@
+// Arquivo didático: meta_municipio.sqlx.
+// Responsabilidade: limpa, padroniza ou integra dados na camada Silver.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.silverDataset,
+  name: "meta_municipio",
+  description: "Metas municipais normalizadas em formato longo, uma linha por ano-meta.",
+  assertions: {
+    nonNull: ["ano_resultado", "ano_meta", "id_municipio", "rede"],
+    uniqueKey: ["ano_resultado", "ano_meta", "id_municipio", "rede"],
+    rowConditions: ["meta_alfabetizacao IS NULL OR meta_alfabetizacao BETWEEN 0 AND 100"]
+  },
+  bigquery: { clusterBy: ["ano_meta", "id_municipio", "rede"] },
+  tags: ["silver", "batch", "target"]
+}
+
+WITH latest AS (
+  SELECT *
+  FROM ${ref("meta_alfabetizacao_municipio")}
+  WHERE _ingestion_run_id = (
+    SELECT _ingestion_run_id FROM ${ref("meta_alfabetizacao_municipio")}
+    ORDER BY _ingested_at DESC LIMIT 1
+  )
+), prepared AS (
+  SELECT
+    SAFE_CAST(ano AS INT64) AS ano_resultado,
+    LPAD(SAFE_CAST(id_municipio AS STRING), 7, '0') AS id_municipio,
+    LOWER(TRIM(SAFE_CAST(rede AS STRING))) AS rede,
+    SAFE_CAST(taxa_alfabetizacao AS FLOAT64) AS taxa_alfabetizacao_base,
+    SAFE_CAST(nivel_alfabetizacao AS INT64) AS nivel_alfabetizacao,
+    SAFE_CAST(percentual_participacao AS FLOAT64) AS percentual_participacao,
+    SAFE_CAST(meta_alfabetizacao_2024 AS FLOAT64) AS meta_2024,
+    SAFE_CAST(meta_alfabetizacao_2025 AS FLOAT64) AS meta_2025,
+    SAFE_CAST(meta_alfabetizacao_2026 AS FLOAT64) AS meta_2026,
+    SAFE_CAST(meta_alfabetizacao_2027 AS FLOAT64) AS meta_2027,
+    SAFE_CAST(meta_alfabetizacao_2028 AS FLOAT64) AS meta_2028,
+    SAFE_CAST(meta_alfabetizacao_2029 AS FLOAT64) AS meta_2029,
+    SAFE_CAST(meta_alfabetizacao_2030 AS FLOAT64) AS meta_2030,
+    _ingested_at,
+    _ingestion_run_id
+  FROM latest
+)
+SELECT
+  ano_resultado,
+  SAFE_CAST(REPLACE(meta_col, 'meta_', '') AS INT64) AS ano_meta,
+  id_municipio,
+  rede,
+  taxa_alfabetizacao_base,
+  meta_alfabetizacao,
+  nivel_alfabetizacao,
+  percentual_participacao,
+  _ingested_at,
+  _ingestion_run_id,
+  CURRENT_TIMESTAMP() AS _processed_at
+FROM prepared
+UNPIVOT(meta_alfabetizacao FOR meta_col IN (
+  meta_2024, meta_2025, meta_2026, meta_2027, meta_2028, meta_2029, meta_2030
+))
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY ano_resultado, ano_meta, id_municipio, rede
+  ORDER BY _ingested_at DESC
+) = 1

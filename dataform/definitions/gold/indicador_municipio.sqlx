@@ -1,0 +1,110 @@
+// Arquivo didático: indicador_municipio.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "indicador_municipio",
+  description: "Painel municipal com resultados observados, metas anuais, contexto territorial e distância para a meta.",
+  assertions: {
+    nonNull: ["id_municipio", "sigla_uf", "rede", "origem_dado"],
+    rowConditions: [
+      "taxa_alfabetizacao IS NULL OR taxa_alfabetizacao BETWEEN 0 AND 100",
+      "meta_alfabetizacao IS NULL OR meta_alfabetizacao BETWEEN 0 AND 100"
+    ]
+  },
+  bigquery: {
+    clusterBy: ["ano_meta", "sigla_uf", "id_municipio", "rede"]
+  },
+  tags: ["gold", "dashboard", "municipio"]
+}
+
+WITH batch AS (
+  SELECT
+    r.ano AS ano_resultado,
+    m.ano_meta,
+    r.id_municipio,
+    d.nome_municipio,
+    d.sigla_uf,
+    d.nome_uf,
+    d.regiao,
+    r.serie,
+    r.rede,
+    r.taxa_alfabetizacao,
+    r.media_portugues,
+    m.meta_alfabetizacao,
+    m.nivel_alfabetizacao,
+    m.percentual_participacao,
+    r.proporcao_aluno_nivel_0,
+    r.proporcao_aluno_nivel_1,
+    r.proporcao_aluno_nivel_2,
+    r.proporcao_aluno_nivel_3,
+    r.proporcao_aluno_nivel_4,
+    r.proporcao_aluno_nivel_5,
+    r.proporcao_aluno_nivel_6,
+    r.proporcao_aluno_nivel_7,
+    r.proporcao_aluno_nivel_8,
+    "BATCH_BASE_DOS_DADOS" AS origem_dado,
+    r._processed_at AS atualizado_em
+  FROM ${ref("municipio_resultado")} r
+  LEFT JOIN ${ref("meta_municipio")} m
+    ON m.ano_resultado = r.ano
+   AND m.id_municipio = r.id_municipio
+   AND m.rede = r.rede
+  LEFT JOIN ${ref("dim_municipio")} d USING (id_municipio)
+),
+streaming AS (
+  SELECT
+    e.ano AS ano_resultado,
+    e.ano AS ano_meta,
+    e.id_municipio,
+    d.nome_municipio,
+    e.sigla_uf,
+    d.nome_uf,
+    d.regiao,
+    e.serie,
+    e.rede,
+    e.taxa_alfabetizacao,
+    CAST(NULL AS FLOAT64) AS media_portugues,
+    COALESCE(e.meta_alfabetizacao, m.meta_alfabetizacao) AS meta_alfabetizacao,
+    m.nivel_alfabetizacao,
+    m.percentual_participacao,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_0,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_1,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_2,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_3,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_4,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_5,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_6,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_7,
+    CAST(NULL AS FLOAT64) AS proporcao_aluno_nivel_8,
+    "STREAMING_PUBSUB" AS origem_dado,
+    e.data_processamento AS atualizado_em
+  FROM ${ref("eventos_indicador_tratados")} e
+  LEFT JOIN ${ref("dim_municipio")} d USING (id_municipio)
+  LEFT JOIN ${ref("meta_municipio")} m
+    ON m.ano_meta = e.ano
+   AND m.id_municipio = e.id_municipio
+   AND m.rede = e.rede
+  QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY e.ano, e.id_municipio, e.serie, e.rede
+    ORDER BY e.data_evento DESC, e.data_processamento DESC
+  ) = 1
+),
+combined AS (
+  SELECT * FROM batch
+  UNION ALL
+  SELECT * FROM streaming
+)
+SELECT
+  *,
+  taxa_alfabetizacao - meta_alfabetizacao AS gap_meta_pontos_percentuais,
+  CASE
+    WHEN taxa_alfabetizacao IS NULL OR meta_alfabetizacao IS NULL THEN "SEM_COMPARACAO"
+    WHEN taxa_alfabetizacao >= meta_alfabetizacao THEN "META_ATINGIDA"
+    WHEN taxa_alfabetizacao >= meta_alfabetizacao - 5 THEN "PROXIMO_DA_META"
+    ELSE "ABAIXO_DA_META"
+  END AS status_meta,
+  CURRENT_TIMESTAMP() AS _gold_generated_at
+FROM combined

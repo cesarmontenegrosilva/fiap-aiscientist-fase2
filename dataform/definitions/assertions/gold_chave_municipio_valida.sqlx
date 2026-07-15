@@ -1,0 +1,13 @@
+// Arquivo didático: gold_chave_municipio_valida.sqlx.
+// Responsabilidade: executa uma regra de qualidade e deve retornar zero linhas.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "assertion",
+  name: "gold_chave_municipio_valida",
+  description: "Valida o formato IBGE de sete dígitos na camada Gold."
+}
+
+SELECT id_municipio
+FROM ${ref("indicador_municipio")}
+WHERE NOT REGEXP_CONTAINS(id_municipio, r'^\d{7}$')

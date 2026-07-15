@@ -1,0 +1,62 @@
+# Projeto público onde a Base dos Dados disponibiliza as tabelas no BigQuery.
+source_project: basedosdados
+
+# Dataset público do Indicador Criança Alfabetizada.
+source_dataset: br_inep_avaliacao_alfabetizacao
+
+# Fontes principais do desafio.
+sources:
+  # A tabela de resultados por UF é pequena e será copiada integralmente.
+  - name: uf
+    source_table: uf
+    destination_table: uf
+    mode: full_snapshot
+
+  # A tabela de resultados por município é copiada integralmente.
+  - name: municipio
+    source_table: municipio
+    destination_table: municipio
+    mode: full_snapshot
+
+  # A tabela de alunos pode ser grande.
+  # Para controlar custos, o projeto cria uma tabela física com até 500 linhas.
+  # Essa tabela é criada apenas na primeira execução e depois é reutilizada.
+  - name: alunos_amostra
+    source_table: alunos
+    destination_table: alunos_amostra
+    mode: physical_sample_once
+    sample_rows: 500
+    sample_percent: 1
+
+  # A meta nacional é pequena e será copiada integralmente.
+  - name: meta_alfabetizacao_brasil
+    source_table: meta_alfabetizacao_brasil
+    destination_table: meta_alfabetizacao_brasil
+    mode: full_snapshot
+
+  # As metas estaduais serão copiadas integralmente.
+  - name: meta_alfabetizacao_uf
+    source_table: meta_alfabetizacao_uf
+    destination_table: meta_alfabetizacao_uf
+    mode: full_snapshot
+
+  # As metas municipais serão copiadas integralmente.
+  - name: meta_alfabetizacao_municipio
+    source_table: meta_alfabetizacao_municipio
+    destination_table: meta_alfabetizacao_municipio
+    mode: full_snapshot
+
+  # O dicionário ajuda a interpretar os campos das tabelas públicas.
+  - name: dicionario
+    source_table: dicionario
+    destination_table: dicionario
+    mode: full_snapshot
+
+# Fonte externa usada para enriquecer os municípios com nome, UF e região.
+external_sources:
+  - name: diretorio_municipio
+    source_project: basedosdados
+    source_dataset: br_bd_diretorios_brasil
+    source_table: municipio
+    destination_table: diretorio_municipio
+    mode: full_snapshot

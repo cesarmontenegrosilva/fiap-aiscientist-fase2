@@ -1,0 +1,45 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad=0.35, nodesep=0.35, ranksep=0.65, fontname="Arial"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10, margin="0.15,0.10", color="#24445C", fillcolor="#F4F8FB"];
+  edge [color="#53758C", penwidth=1.4, arrowsize=0.75, fontname="Arial", fontsize=9];
+
+  subgraph cluster_sources {
+    label="Fontes"; color="#A8BED0"; style="rounded";
+    bd [label="Base dos Dados\nBigQuery público", fillcolor="#E8F3FF"];
+    sim [label="Simulador de eventos\nPython", fillcolor="#E8F3FF"];
+  }
+
+  subgraph cluster_ingestion {
+    label="Ingestão híbrida"; color="#A8BED0"; style="rounded";
+    batch [label="Cloud Run Job\nPython + BigQuery Jobs\nbatch agendado", fillcolor="#FFF4D9"];
+    pubsub [label="Pub/Sub", fillcolor="#FFF4D9"];
+    dataflow [label="Dataflow / Apache Beam\nvalidação + DLQ", fillcolor="#FFF4D9"];
+  }
+
+  subgraph cluster_medallion {
+    label="Arquitetura Medalhão"; color="#A8BED0"; style="rounded";
+    bronze [label="BRONZE\nBigQuery + GCS Parquet\nhistórico bruto", fillcolor="#EAD6C5"];
+    silver [label="SILVER\nDataform\nlimpeza + integração", fillcolor="#E3E8ED"];
+    gold [label="GOLD\nDataform\nmodelos analíticos", fillcolor="#F4D78B"];
+  }
+
+  subgraph cluster_consumption {
+    label="Consumo e operação"; color="#A8BED0"; style="rounded";
+    looker [label="Looker Studio\ndashboards", fillcolor="#E1F4E8"];
+    ml [label="BigQuery ML / Vertex AI\npredição e clusters", fillcolor="#E1F4E8"];
+    monitor [label="Cloud Monitoring + Logging\nqualidade + alertas", fillcolor="#FBE7EA"];
+    finops [label="Budgets + labels + lifecycle\nFinOps", fillcolor="#FBE7EA"];
+  }
+
+  bd -> batch -> bronze;
+  sim -> pubsub -> dataflow -> bronze;
+  dataflow -> bronze [label="válidos / rejeitados"];
+  bronze -> silver -> gold;
+  gold -> looker;
+  gold -> ml;
+  batch -> monitor [style=dashed];
+  dataflow -> monitor [style=dashed];
+  silver -> monitor [style=dashed, label="assertions"];
+  bronze -> finops [style=dashed];
+  dataflow -> finops [style=dashed];
+}

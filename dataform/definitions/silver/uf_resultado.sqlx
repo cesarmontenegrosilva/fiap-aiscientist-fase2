@@ -1,0 +1,50 @@
+// Arquivo didático: uf_resultado.sqlx.
+// Responsabilidade: limpa, padroniza ou integra dados na camada Silver.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.silverDataset,
+  name: "uf_resultado",
+  description: "Resultados estaduais tratados da Avaliação da Alfabetização.",
+  assertions: {
+    nonNull: ["ano", "sigla_uf", "serie", "rede"],
+    uniqueKey: ["ano", "sigla_uf", "serie", "rede"],
+    rowConditions: ["taxa_alfabetizacao IS NULL OR taxa_alfabetizacao BETWEEN 0 AND 100"]
+  },
+  bigquery: { clusterBy: ["ano", "sigla_uf", "rede"] },
+  tags: ["silver", "batch", "fact"]
+}
+
+WITH latest AS (
+  SELECT *
+  FROM ${ref("uf")}
+  WHERE _ingestion_run_id = (
+    SELECT _ingestion_run_id FROM ${ref("uf")}
+    ORDER BY _ingested_at DESC LIMIT 1
+  )
+)
+SELECT
+  SAFE_CAST(ano AS INT64) AS ano,
+  UPPER(TRIM(SAFE_CAST(sigla_uf AS STRING))) AS sigla_uf,
+  LOWER(TRIM(SAFE_CAST(serie AS STRING))) AS serie,
+  LOWER(TRIM(SAFE_CAST(rede AS STRING))) AS rede,
+  SAFE_CAST(taxa_alfabetizacao AS FLOAT64) AS taxa_alfabetizacao,
+  SAFE_CAST(media_portugues AS FLOAT64) AS media_portugues,
+  SAFE_CAST(proporcao_aluno_nivel_0 AS FLOAT64) AS proporcao_aluno_nivel_0,
+  SAFE_CAST(proporcao_aluno_nivel_1 AS FLOAT64) AS proporcao_aluno_nivel_1,
+  SAFE_CAST(proporcao_aluno_nivel_2 AS FLOAT64) AS proporcao_aluno_nivel_2,
+  SAFE_CAST(proporcao_aluno_nivel_3 AS FLOAT64) AS proporcao_aluno_nivel_3,
+  SAFE_CAST(proporcao_aluno_nivel_4 AS FLOAT64) AS proporcao_aluno_nivel_4,
+  SAFE_CAST(proporcao_aluno_nivel_5 AS FLOAT64) AS proporcao_aluno_nivel_5,
+  SAFE_CAST(proporcao_aluno_nivel_6 AS FLOAT64) AS proporcao_aluno_nivel_6,
+  SAFE_CAST(proporcao_aluno_nivel_7 AS FLOAT64) AS proporcao_aluno_nivel_7,
+  SAFE_CAST(proporcao_aluno_nivel_8 AS FLOAT64) AS proporcao_aluno_nivel_8,
+  _ingested_at,
+  _ingestion_run_id,
+  CURRENT_TIMESTAMP() AS _processed_at
+FROM latest
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY ano, sigla_uf, serie, rede
+  ORDER BY _ingested_at DESC
+) = 1

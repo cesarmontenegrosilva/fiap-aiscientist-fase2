@@ -1,0 +1,83 @@
+// Arquivo didático: features_ml.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "features_ml",
+  description: "Features municipais agregadas, prontas para modelos de predição e segmentação de vulnerabilidade educacional.",
+  assertions: {
+    nonNull: ["ano", "id_municipio", "rede"],
+    uniqueKey: ["ano", "id_municipio", "rede"]
+  },
+  bigquery: { clusterBy: ["ano", "sigla_uf", "id_municipio"] },
+  tags: ["gold", "ml", "features"]
+}
+
+WITH alunos_agregados AS (
+  SELECT
+    ano,
+    id_municipio,
+    rede,
+    COUNT(*) AS quantidade_alunos,
+    COUNTIF(presenca IN ("presente", "1", "sim", "s", "true")) AS alunos_presentes,
+    AVG(proficiencia) AS proficiencia_media,
+    STDDEV_POP(proficiencia) AS proficiencia_desvio_padrao,
+    SAFE_DIVIDE(COUNTIF(alfabetizado_flag), COUNTIF(alfabetizado_flag IS NOT NULL)) * 100 AS percentual_alfabetizados_microdados,
+    SUM(IF(alfabetizado_flag, COALESCE(peso_aluno, 1), 0)) /
+      NULLIF(SUM(IF(alfabetizado_flag IS NOT NULL, COALESCE(peso_aluno, 1), 0)), 0) * 100
+      AS percentual_alfabetizados_ponderado
+  FROM ${ref("alunos_tratados")}
+  GROUP BY 1, 2, 3
+),
+resultado AS (
+  SELECT
+    r.ano,
+    r.id_municipio,
+    r.rede,
+    ARRAY_AGG(r.serie ORDER BY r.taxa_alfabetizacao DESC LIMIT 1)[OFFSET(0)] AS serie_referencia,
+    MAX(r.taxa_alfabetizacao) AS taxa_alfabetizacao,
+    MAX(r.media_portugues) AS media_portugues
+  FROM ${ref("municipio_resultado")} r
+  GROUP BY 1, 2, 3
+),
+meta AS (
+  SELECT
+    ano_resultado AS ano,
+    id_municipio,
+    rede,
+    MAX(IF(ano_meta = 2030, meta_alfabetizacao, NULL)) AS meta_2030,
+    MIN(IF(ano_meta >= 2024, meta_alfabetizacao, NULL)) AS primeira_meta,
+    MAX(nivel_alfabetizacao) AS nivel_alfabetizacao,
+    MAX(percentual_participacao) AS percentual_participacao
+  FROM ${ref("meta_municipio")}
+  GROUP BY 1, 2, 3
+)
+SELECT
+  a.ano,
+  a.id_municipio,
+  d.nome_municipio,
+  d.sigla_uf,
+  d.nome_uf,
+  d.regiao,
+  a.rede,
+  a.quantidade_alunos,
+  a.alunos_presentes,
+  SAFE_DIVIDE(a.alunos_presentes, a.quantidade_alunos) * 100 AS taxa_presenca,
+  a.proficiencia_media,
+  a.proficiencia_desvio_padrao,
+  a.percentual_alfabetizados_microdados,
+  a.percentual_alfabetizados_ponderado,
+  r.taxa_alfabetizacao AS target_taxa_alfabetizacao,
+  r.media_portugues,
+  m.primeira_meta,
+  m.meta_2030,
+  m.nivel_alfabetizacao,
+  m.percentual_participacao,
+  r.taxa_alfabetizacao - m.meta_2030 AS gap_meta_2030,
+  CURRENT_TIMESTAMP() AS _gold_generated_at
+FROM alunos_agregados a
+LEFT JOIN resultado r USING (ano, id_municipio, rede)
+LEFT JOIN meta m USING (ano, id_municipio, rede)
+LEFT JOIN ${ref("dim_municipio")} d USING (id_municipio)

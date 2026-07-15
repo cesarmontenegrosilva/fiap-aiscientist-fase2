@@ -1,0 +1,14 @@
+// Arquivo didático: meta_municipal_sem_orfao.sqlx.
+// Responsabilidade: executa uma regra de qualidade e deve retornar zero linhas.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "assertion",
+  name: "meta_municipal_sem_orfao",
+  description: "Toda meta municipal deve possuir município válido no diretório territorial."
+}
+
+SELECT m.id_municipio
+FROM ${ref("meta_municipio")} m
+LEFT JOIN ${ref("dim_municipio")} d USING (id_municipio)
+WHERE d.id_municipio IS NULL

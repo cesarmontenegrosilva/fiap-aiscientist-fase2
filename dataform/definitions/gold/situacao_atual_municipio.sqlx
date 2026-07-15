@@ -1,0 +1,30 @@
+// Arquivo didático: situacao_atual_municipio.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "view",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "situacao_atual_municipio",
+  description: "Última medição por município, série e rede; prioriza streaming e associa a meta mais próxima do ano observado.",
+  tags: ["gold", "dashboard", "current"]
+}
+
+WITH ranked AS (
+  SELECT
+    i.*,
+    IF(origem_dado = "STREAMING_PUBSUB", 1, 2) AS prioridade_origem,
+    ROW_NUMBER() OVER (
+      PARTITION BY id_municipio, serie, rede
+      ORDER BY
+        ano_resultado DESC,
+        IF(origem_dado = "STREAMING_PUBSUB", 1, 2),
+        atualizado_em DESC,
+        ABS(COALESCE(ano_meta, ano_resultado) - ano_resultado),
+        ano_meta
+    ) AS ordem_atualidade
+  FROM ${ref("indicador_municipio")} i
+)
+SELECT * EXCEPT (prioridade_origem, ordem_atualidade)
+FROM ranked
+WHERE ordem_atualidade = 1

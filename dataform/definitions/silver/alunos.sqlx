@@ -1,0 +1,52 @@
+// Arquivo didático: alunos.sqlx.
+// Responsabilidade: limpa, padroniza ou integra dados na camada Silver.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.silverDataset,
+  name: "alunos_tratados",
+  description: "Amostra física de alunos tratada e padronizada para a demonstração acadêmica.",
+  assertions: {
+    nonNull: ["ano", "id_aluno", "id_municipio"],
+    uniqueKey: ["ano", "id_aluno"],
+    rowConditions: ["proficiencia IS NULL OR proficiencia >= 0"]
+  },
+  bigquery: { clusterBy: ["ano", "id_municipio", "id_escola"] },
+  tags: ["silver", "batch", "amostra"]
+}
+
+WITH latest AS (
+  SELECT *
+  FROM ${ref("alunos_amostra")}
+  WHERE _ingestion_run_id = (
+    SELECT _ingestion_run_id FROM ${ref("alunos_amostra")}
+    ORDER BY _ingested_at DESC LIMIT 1
+  )
+)
+SELECT
+  SAFE_CAST(ano AS INT64) AS ano,
+  LPAD(SAFE_CAST(id_municipio AS STRING), 7, '0') AS id_municipio,
+  SAFE_CAST(id_escola AS STRING) AS id_escola,
+  SAFE_CAST(id_aluno AS STRING) AS id_aluno,
+  SAFE_CAST(caderno AS STRING) AS caderno,
+  LOWER(TRIM(SAFE_CAST(serie AS STRING))) AS serie,
+  LOWER(TRIM(SAFE_CAST(rede AS STRING))) AS rede,
+  LOWER(TRIM(SAFE_CAST(presenca AS STRING))) AS presenca,
+  LOWER(TRIM(SAFE_CAST(preenchimento_caderno AS STRING))) AS preenchimento_caderno,
+  LOWER(TRIM(SAFE_CAST(alfabetizado AS STRING))) AS alfabetizado,
+  CASE
+    WHEN LOWER(TRIM(SAFE_CAST(alfabetizado AS STRING))) IN ('1','sim','s','true') THEN TRUE
+    WHEN LOWER(TRIM(SAFE_CAST(alfabetizado AS STRING))) IN ('0','nao','não','n','false') THEN FALSE
+    ELSE NULL
+  END AS alfabetizado_flag,
+  SAFE_CAST(proficiencia AS FLOAT64) AS proficiencia,
+  SAFE_CAST(peso_aluno AS FLOAT64) AS peso_aluno,
+  _ingested_at,
+  _ingestion_run_id,
+  CURRENT_TIMESTAMP() AS _processed_at
+FROM latest
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY ano, id_aluno
+  ORDER BY _ingested_at DESC
+) = 1

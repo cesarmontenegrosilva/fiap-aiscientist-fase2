@@ -1,0 +1,10 @@
+// Arquivo didático: bronze_municipio.sqlx.
+// Responsabilidade: declara uma tabela Bronze já existente para o Dataform.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "declaration",
+  database: dataform.projectConfig.defaultDatabase,
+  schema: dataform.projectConfig.vars.bronzeDataset,
+  name: "municipio"
+}

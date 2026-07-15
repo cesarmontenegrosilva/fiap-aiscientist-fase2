@@ -1,0 +1,20 @@
+digraph G {
+  graph [rankdir=LR, bgcolor="white", pad=0.3, nodesep=0.35, ranksep=0.65, fontname="Arial"];
+  node [shape=record, style="filled", fontname="Arial", fontsize=9, color="#24445C", fillcolor="#F7FAFC"];
+  edge [color="#53758C", penwidth=1.1, arrowsize=0.65];
+  dim [label="{silver.dim_municipio|id_municipio PK|nome_municipio|sigla_uf|regiao}", fillcolor="#E3E8ED"];
+  res [label="{silver.municipio_resultado|ano + id_municipio + serie + rede PK|taxa_alfabetizacao|media_portugues|níveis 0–8}", fillcolor="#E3E8ED"];
+  meta [label="{silver.meta_municipio|ano_resultado + ano_meta + id_municipio + rede PK|meta_alfabetizacao|participacao|nivel}", fillcolor="#E3E8ED"];
+  evt [label="{silver.eventos_indicador_tratados|id_evento PK|id_municipio|ano|taxa|meta|data_evento}", fillcolor="#E3E8ED"];
+  alunos [label="{silver.alunos_tratados|ano + id_aluno PK|id_municipio|proficiencia|alfabetizado_flag|peso}", fillcolor="#E3E8ED"];
+  gold [label="{gold.indicador_municipio|resultado + meta + território|gap_meta|status_meta|origem_dado}", fillcolor="#F4D78B"];
+  features [label="{gold.features_ml|agregados de alunos|target|metas|contexto territorial}", fillcolor="#F4D78B"];
+  dim -> gold;
+  res -> gold;
+  meta -> gold;
+  evt -> gold;
+  dim -> features;
+  res -> features;
+  meta -> features;
+  alunos -> features;
+}

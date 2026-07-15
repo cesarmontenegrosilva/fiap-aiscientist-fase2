@@ -1,0 +1,15 @@
+// Arquivo didático: bronze_alunos.sqlx.
+// Responsabilidade: declara uma tabela Bronze já existente para o Dataform.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+// Declara a tabela física de amostra criada uma única vez na camada Bronze.
+config {
+  // Declaration informa ao Dataform que a tabela já existe no BigQuery.
+  type: "declaration",
+  // O projeto é definido em dataform/workflow_settings.yaml.
+  database: dataform.projectConfig.defaultDatabase,
+  // O dataset Bronze também é definido no arquivo de configuração do Dataform.
+  schema: dataform.projectConfig.vars.bronzeDataset,
+  // Silver e Gold passam a usar a amostra local, não a tabela pública completa.
+  name: "alunos_amostra"
+}

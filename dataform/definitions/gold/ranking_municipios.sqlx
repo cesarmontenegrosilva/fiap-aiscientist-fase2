@@ -1,0 +1,24 @@
+// Arquivo didático: ranking_municipios.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "view",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "ranking_municipios",
+  description: "Ranking nacional e estadual de municípios pela taxa de alfabetização mais recente.",
+  tags: ["gold", "dashboard", "ranking"]
+}
+
+SELECT
+  atual.*,
+  DENSE_RANK() OVER (
+    PARTITION BY serie, rede
+    ORDER BY taxa_alfabetizacao DESC
+  ) AS ranking_brasil,
+  DENSE_RANK() OVER (
+    PARTITION BY sigla_uf, serie, rede
+    ORDER BY taxa_alfabetizacao DESC
+  ) AS ranking_uf
+FROM ${ref("situacao_atual_municipio")} atual
+WHERE taxa_alfabetizacao IS NOT NULL

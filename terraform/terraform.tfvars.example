@@ -1,0 +1,23 @@
+# TROQUE pelo ID real do projeto temporário criado para a demonstração.
+project_id = "SEU_PROJECT_ID"
+
+# Região de Dataflow, Cloud Run, Scheduler e Artifact Registry.
+region = "us-central1"
+
+# Mantenha US para compatibilidade com a fonte pública.
+bigquery_location = "US"
+
+# TROQUE pelo nome globalmente único do bucket.
+bucket_name = "SEU_PROJECT_ID-alfabetizacao-lake"
+
+# Opcional: informe a conta de faturamento para criar o orçamento pelo Terraform.
+billing_account = ""
+
+# Valor acadêmico do alerta de orçamento.
+monthly_budget_brl = 100
+
+# Moeda do orçamento.
+budget_currency = "BRL"
+
+# Permite que terraform destroy remova tabelas e objetos do bucket.
+allow_destroy_data = true

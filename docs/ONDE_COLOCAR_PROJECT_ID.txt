@@ -1,0 +1,60 @@
+ONDE COLOCAR O ID DO PROJETO GCP
+
+Use o ID técnico do projeto, não apenas o nome exibido no console.
+Exemplo de ID: tech-alfabetizacao-augusto
+
+1. CONFIGURAÇÃO DO GCLOUD
+Comando:
+gcloud config set project SEU_PROJECT_ID
+
+2. ARQUIVO .env
+Copie .env.example para .env.
+Altere estas linhas:
+GCP_PROJECT_ID=SEU_PROJECT_ID
+GCS_BUCKET=SEU_PROJECT_ID-alfabetizacao-lake
+TEMP_LOCATION=gs://SEU_PROJECT_ID-alfabetizacao-lake/tmp
+STAGING_LOCATION=gs://SEU_PROJECT_ID-alfabetizacao-lake/staging
+DATAFLOW_SERVICE_ACCOUNT=alfabetizacao-dataflow@SEU_PROJECT_ID.iam.gserviceaccount.com
+
+3. TERRAFORM
+Copie terraform/terraform.tfvars.example para terraform/terraform.tfvars.
+Altere:
+project_id = "SEU_PROJECT_ID"
+bucket_name = "SEU_PROJECT_ID-alfabetizacao-lake"
+
+4. DATAFORM
+Arquivo:
+dataform/workflow_settings.yaml
+Altere:
+defaultProject: SEU_PROJECT_ID
+
+Forma recomendada, sem editar manualmente:
+python scripts/configure_dataform.py --project-id SEU_PROJECT_ID
+
+5. COMANDO DE INGESTÃO BATCH
+O project ID é informado no parâmetro:
+python scripts/transferir_dados_inep.py --project-id SEU_PROJECT_ID --sem-parquet
+
+6. SQLs DE DASHBOARD
+Arquivos:
+sql/dashboard/01_kpis.sql
+sql/dashboard/02_mapa_municipal.sql
+sql/dashboard/03_ranking.sql
+sql/dashboard/04_evolucao.sql
+
+Troque PROJECT_ID pelo valor real antes de executar.
+
+7. SCRIPT DE LIMPEZA POWERSHELL
+Exemplo:
+.\scripts\limpar_gcp.ps1 -ProjectId SEU_PROJECT_ID -Bucket SEU_PROJECT_ID-alfabetizacao-lake -DeleteProject
+
+8. SCRIPT DE LIMPEZA BASH
+Exemplo:
+bash scripts/limpar_gcp.sh --project-id SEU_PROJECT_ID --bucket SEU_PROJECT_ID-alfabetizacao-lake --delete-project
+
+9. ARQUIVOS ONDE NÃO DEVE TROCAR O PROJETO DE ORIGEM
+Não altere estes valores:
+SOURCE_PROJECT=basedosdados
+SOURCE_DATASET=br_inep_avaliacao_alfabetizacao
+
+O projeto basedosdados é somente a origem pública. Ele não pertence ao aluno e está protegido nos scripts de exclusão.

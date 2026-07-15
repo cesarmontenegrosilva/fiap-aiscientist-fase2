@@ -1,0 +1,14 @@
+// Arquivo didático: sem_orfao_resultado_municipio.sqlx.
+// Responsabilidade: executa uma regra de qualidade e deve retornar zero linhas.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "assertion",
+  name: "sem_orfao_resultado_municipio",
+  description: "Todo resultado municipal deve possuir correspondência na dimensão territorial."
+}
+
+SELECT r.id_municipio
+FROM ${ref("municipio_resultado")} r
+LEFT JOIN ${ref("dim_municipio")} d USING (id_municipio)
+WHERE d.id_municipio IS NULL

@@ -1,0 +1,33 @@
+// Arquivo didático: evolucao_temporal.sqlx.
+// Responsabilidade: materializa um indicador analítico na camada Gold.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "view",
+  schema: dataform.projectConfig.vars.goldDataset,
+  name: "evolucao_temporal",
+  description: "Série temporal consolidada por município; eventos streaming substituem o snapshot batch do mesmo ano quando existirem.",
+  tags: ["gold", "dashboard", "timeseries"]
+}
+
+SELECT
+  ano_resultado AS ano,
+  id_municipio,
+  nome_municipio,
+  sigla_uf,
+  regiao,
+  serie,
+  rede,
+  taxa_alfabetizacao,
+  origem_dado,
+  atualizado_em
+FROM ${ref("indicador_municipio")}
+WHERE taxa_alfabetizacao IS NOT NULL
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY ano_resultado, id_municipio, serie, rede
+  ORDER BY
+    IF(origem_dado = "STREAMING_PUBSUB", 1, 2),
+    atualizado_em DESC,
+    ABS(COALESCE(ano_meta, ano_resultado) - ano_resultado),
+    ano_meta
+) = 1

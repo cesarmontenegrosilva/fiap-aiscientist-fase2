@@ -1,0 +1,20 @@
+# Versão do núcleo Dataform usada pelo projeto.
+dataformCoreVersion: 3.0.26
+
+# TROQUE SEU_PROJECT_ID pelo ID real ou execute scripts/configure_dataform.py.
+defaultProject: my-project-8142-fiap
+
+# Mantenha US para compatibilidade com as tabelas Bronze.
+defaultLocation: US
+
+# Dataset padrão dos modelos analíticos.
+defaultDataset: alfabetizacao_gold
+
+# Dataset onde as assertions são materializadas.
+defaultAssertionDataset: alfabetizacao_assertions
+
+# Nomes dos datasets usados nos arquivos SQLX.
+vars:
+  bronzeDataset: alfabetizacao_bronze
+  silverDataset: alfabetizacao_silver
+  goldDataset: alfabetizacao_gold

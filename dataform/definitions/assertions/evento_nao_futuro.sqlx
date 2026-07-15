@@ -1,0 +1,13 @@
+// Arquivo didático: evento_nao_futuro.sqlx.
+// Responsabilidade: executa uma regra de qualidade e deve retornar zero linhas.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "assertion",
+  name: "evento_nao_futuro",
+  description: "Eventos com data superior ao momento de processamento são rejeitados."
+}
+
+SELECT id_evento, data_evento
+FROM ${ref("eventos_indicador_tratados")}
+WHERE data_evento > CURRENT_TIMESTAMP()

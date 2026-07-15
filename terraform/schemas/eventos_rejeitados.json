@@ -1,0 +1,6 @@
+[
+  {"name":"payload","type":"STRING","mode":"REQUIRED"},
+  {"name":"error_message","type":"STRING","mode":"REQUIRED"},
+  {"name":"data_processamento","type":"TIMESTAMP","mode":"REQUIRED"},
+  {"name":"pubsub_message_id","type":"STRING","mode":"NULLABLE"}
+]

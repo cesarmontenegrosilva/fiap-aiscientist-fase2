@@ -1,0 +1,14 @@
+// Arquivo didático: consistencia_uf_municipio.sqlx.
+// Responsabilidade: executa uma regra de qualidade e deve retornar zero linhas.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "assertion",
+  name: "consistencia_uf_municipio",
+  description: "A UF informada no evento deve coincidir com a UF do diretório municipal."
+}
+
+SELECT e.id_evento, e.id_municipio, e.sigla_uf AS uf_evento, d.sigla_uf AS uf_diretorio
+FROM ${ref("eventos_indicador_tratados")} e
+JOIN ${ref("dim_municipio")} d USING (id_municipio)
+WHERE e.sigla_uf != d.sigla_uf

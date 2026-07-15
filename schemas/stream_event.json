@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AtualizacaoIndicadorAlfabetizacao",
+  "type": "object",
+  "required": [
+    "id_evento",
+    "id_municipio",
+    "sigla_uf",
+    "ano",
+    "rede",
+    "serie",
+    "taxa_alfabetizacao",
+    "data_evento"
+  ],
+  "properties": {
+    "id_evento": {"type": "string", "minLength": 1},
+    "id_municipio": {"type": "string", "pattern": "^[0-9]{7}$"},
+    "sigla_uf": {"type": "string", "pattern": "^[A-Z]{2}$"},
+    "ano": {"type": "integer", "minimum": 2023, "maximum": 2035},
+    "rede": {"type": "string", "minLength": 1},
+    "serie": {"type": "string", "minLength": 1},
+    "taxa_alfabetizacao": {"type": "number", "minimum": 0, "maximum": 100},
+    "meta_alfabetizacao": {"type": ["number", "null"], "minimum": 0, "maximum": 100},
+    "tipo_evento": {"type": "string"},
+    "fonte": {"type": "string"},
+    "data_evento": {"type": "string", "format": "date-time"}
+  },
+  "additionalProperties": true
+}

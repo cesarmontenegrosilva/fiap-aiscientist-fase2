@@ -1,0 +1,50 @@
+// Arquivo didático: dim_municipio.sqlx.
+// Responsabilidade: limpa, padroniza ou integra dados na camada Silver.
+// Os comentários explicam o objetivo; o SQL abaixo é executado no BigQuery.
+
+config {
+  type: "table",
+  schema: dataform.projectConfig.vars.silverDataset,
+  name: "dim_municipio",
+  description: "Dimensão municipal enriquecida pelo diretório territorial da Base dos Dados.",
+  columns: {
+    id_municipio: "Código IBGE de sete dígitos.",
+    nome_municipio: "Nome oficial do município.",
+    sigla_uf: "Sigla da Unidade da Federação.",
+    nome_uf: "Nome da Unidade da Federação.",
+    regiao: "Grande região do Brasil."
+  },
+  assertions: {
+    nonNull: ["id_municipio", "nome_municipio", "sigla_uf"],
+    uniqueKey: ["id_municipio"]
+  },
+  bigquery: {
+    clusterBy: ["sigla_uf", "id_municipio"]
+  },
+  tags: ["silver", "batch", "dimension"]
+}
+
+WITH latest AS (
+  SELECT *
+  FROM ${ref("diretorio_municipio")}
+  WHERE _ingestion_run_id = (
+    SELECT _ingestion_run_id
+    FROM ${ref("diretorio_municipio")}
+    ORDER BY _ingested_at DESC
+    LIMIT 1
+  )
+)
+SELECT
+  LPAD(SAFE_CAST(id_municipio AS STRING), 7, '0') AS id_municipio,
+  TRIM(SAFE_CAST(nome AS STRING)) AS nome_municipio,
+  UPPER(TRIM(SAFE_CAST(sigla_uf AS STRING))) AS sigla_uf,
+  SAFE_CAST(nome_uf AS STRING) AS nome_uf,
+  SAFE_CAST(regiao AS STRING) AS regiao,
+  SAFE_CAST(id_microrregiao AS STRING) AS id_microrregiao,
+  SAFE_CAST(id_mesorregiao AS STRING) AS id_mesorregiao,
+  CURRENT_TIMESTAMP() AS _processed_at
+FROM latest
+QUALIFY ROW_NUMBER() OVER (
+  PARTITION BY LPAD(SAFE_CAST(id_municipio AS STRING), 7, '0')
+  ORDER BY _ingested_at DESC
+) = 1

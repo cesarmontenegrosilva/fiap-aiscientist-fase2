@@ -1,0 +1,413 @@
+MAPA DE ARQUIVOS, SCRIPTS E FERRAMENTAS
+
+Este inventário explica, em linguagem simples, a responsabilidade de cada arquivo entregue no repositório.
+
+ARQUIVOS DO REPOSITÓRIO
+
+.env.example
+  Modelo de variáveis locais. Mostra exatamente onde inserir o project ID, bucket e nomes dos datasets.
+
+.github/workflows/ci.yml
+  Arquivo de suporte da aplicação.
+
+.github/workflows/deploy.yml
+  Arquivo de suporte da aplicação.
+
+.gitignore
+  Impede o envio de credenciais, ambientes virtuais, states e arquivos temporários ao Git.
+
+Dockerfile
+  Define a imagem usada pelo Cloud Run Job da ingestão batch.
+
+LICENSE
+  Licença do código do repositório.
+
+Makefile
+  Atalhos para instalar, testar, criar infraestrutura e executar as pipelines.
+
+README.md
+  Documento principal escrito em linguagem de aluno, com arquitetura, comandos, custo e exclusão.
+
+assets/architecture.dot
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/architecture.png
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/architecture.svg
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/data_flow.dot
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/data_flow.png
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/data_flow.svg
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/data_model.dot
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/data_model.png
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+assets/data_model.svg
+  Diagrama visual ou arquivo-fonte do desenho da arquitetura, fluxo ou modelo de dados.
+
+config/sources.yaml
+  Catálogo das fontes públicas e configuração da amostra física alunos_amostra.
+
+dataform/Dockerfile
+  Imagem opcional para executar o Dataform em ambiente conteinerizado.
+
+dataform/definitions/assertions/consistencia_uf_municipio.sqlx
+  Assertion Dataform; retorna linhas somente quando encontra uma inconsistência.
+
+dataform/definitions/assertions/evento_nao_futuro.sqlx
+  Assertion Dataform; retorna linhas somente quando encontra uma inconsistência.
+
+dataform/definitions/assertions/gold_chave_municipio_valida.sqlx
+  Assertion Dataform; retorna linhas somente quando encontra uma inconsistência.
+
+dataform/definitions/assertions/meta_municipal_sem_orfao.sqlx
+  Assertion Dataform; retorna linhas somente quando encontra uma inconsistência.
+
+dataform/definitions/assertions/sem_orfao_resultado_municipio.sqlx
+  Assertion Dataform; retorna linhas somente quando encontra uma inconsistência.
+
+dataform/definitions/gold/evolucao_temporal.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/gold/features_ml.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/gold/indicador_municipio.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/gold/indicador_uf.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/gold/ranking_municipios.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/gold/resumo_brasil.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/gold/situacao_atual_municipio.sqlx
+  Modelo Gold que materializa uma visão ou indicador analítico.
+
+dataform/definitions/silver/alunos.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/dim_municipio.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/eventos_indicador.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/meta_brasil.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/meta_municipio.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/meta_uf.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/municipio_resultado.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/silver/uf_resultado.sqlx
+  Modelo Silver responsável por limpeza, padronização, deduplicação ou integração.
+
+dataform/definitions/sources/bronze_alunos.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_diretorio_municipio.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_eventos_indicador.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_meta_alfabetizacao_brasil.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_meta_alfabetizacao_municipio.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_meta_alfabetizacao_uf.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_municipio.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/definitions/sources/bronze_uf.sqlx
+  Declara uma tabela Bronze para que o Dataform possa referenciá-la.
+
+dataform/workflow_settings.yaml
+  Define project ID, localização e datasets usados pelo Dataform.
+
+docs/ARCHITECTURE.md
+  Resumo da arquitetura batch, streaming e medalhão.
+
+docs/DATA_DICTIONARY.md
+  Descrição resumida das principais tabelas Bronze, Silver e Gold.
+
+docs/DELIVERY_MANIFEST.md
+  Lista dos componentes entregues.
+
+docs/FINOPS.md
+  Decisões de controle de custo, amostra e encerramento do Dataflow.
+
+docs/FONTES_DADOS_URLS.txt
+  URL e URI BigQuery exatas de cada fonte.
+
+docs/GIT_WORKFLOW.md
+  Sugestão de branches, commits e Pull Requests.
+
+docs/GUIA_TRANSFERENCIA_BIGQUERY.md
+  Explica a cópia da Base dos Dados e a reutilização da amostra.
+
+docs/IA_APPLICATIONS.md
+  Possíveis usos futuros da Gold em modelos de IA.
+
+docs/IMPLEMENTATION_GUIDE.md
+  Sequência resumida para implantar a solução.
+
+docs/LIMPEZA_GCP.md
+  Comandos de simulação e exclusão completa.
+
+docs/MAPA_ARQUIVOS_E_FERRAMENTAS.txt
+  Arquivo de referência em texto simples para facilitar a execução do projeto.
+
+docs/ONDE_COLOCAR_PROJECT_ID.txt
+  Todos os pontos em que o ID do projeto deve ser informado.
+
+docs/PASSO_A_PASSO_EXECUCAO_E_EXCLUSAO.txt
+  Procedimento completo desde login até DELETE_REQUESTED.
+
+docs/RUNBOOK.md
+  Ações de diagnóstico para batch, Dataform, Dataflow e custos.
+
+docs/SHA256SUMS.txt
+  Hashes de integridade dos arquivos da entrega quando gerados.
+
+docs/VALIDATION_REPORT.md
+  Checklist de testes e limites da validação local.
+
+docs/VIDEO_SCRIPT.md
+  Roteiro de apresentação executiva de até cinco minutos.
+
+docs/deliverables/Apresentacao_Tech_Challenge_Alfabetizacao_GCP.pptx
+  Apresentação executiva em PowerPoint.
+
+docs/deliverables/Manual_Implementacao_Tech_Challenge_Alfabetizacao_GCP.docx
+  Manual técnico simplificado em formato Word.
+
+pyproject.toml
+  Metadados do pacote Python, dependências de execução, desenvolvimento, pytest e ruff.
+
+requirements-dataflow.txt
+  Dependências enviadas aos workers do Apache Beam/Dataflow.
+
+requirements-runtime.txt
+  Dependências mínimas usadas na imagem do job batch.
+
+requirements.txt
+  Lista simples das dependências Python gerais.
+
+schemas/stream_event.json
+  Contrato JSON documental do evento simulado.
+
+scripts/build_and_deploy_batch.sh
+  Constrói a imagem Docker e cria/executa o Cloud Run Job batch.
+
+scripts/configure_dataform.py
+  Substitui defaultProject no Dataform pelo project ID informado.
+
+scripts/deploy_all.sh
+  Atalho de implantação completa usando Terraform, batch, Dataform e Dataflow.
+
+scripts/destroy_demo.sh
+  Atalho informativo que chama a limpeza completa.
+
+scripts/limpar_gcp.ps1
+  Limpeza para Windows; cancela jobs, apaga dados e pode excluir o projeto inteiro.
+
+scripts/limpar_gcp.sh
+  Versão Bash da limpeza para Git Bash ou Cloud Shell.
+
+scripts/run_batch_transform.sh
+  Executa Bronze, Dataform e checks de qualidade em sequência.
+
+scripts/run_dataflow.sh
+  Inicia o streaming no Dataflow com limite de dois workers.
+
+scripts/run_dataform.sh
+  Compila e executa Silver, Gold e assertions com o CLI Dataform.
+
+scripts/schedule_batch.sh
+  Cria ou atualiza o agendamento semanal do Cloud Run Job.
+
+scripts/setup_gcp.sh
+  Cria ou seleciona o projeto temporário, vincula billing, habilita APIs e gera arquivos locais.
+
+scripts/smoke_test.sh
+  Publica poucos eventos e consulta tabelas para um teste rápido.
+
+scripts/stop_dataflow.sh
+  Cancela os jobs Dataflow da demonstração.
+
+scripts/transferir_dados_inep.py
+  Comando principal da Bronze; cria recursos mínimos e chama a ingestão batch.
+
+setup.py
+  Empacota os módulos Python para distribuição aos workers do Dataflow.
+
+sql/bronze/01_exemplo_copia_direta.sql
+  Arquivo de suporte da aplicação.
+
+sql/dashboard/01_kpis.sql
+  Consulta comentada para uso no BigQuery ou Looker Studio.
+
+sql/dashboard/02_mapa_municipal.sql
+  Consulta comentada para uso no BigQuery ou Looker Studio.
+
+sql/dashboard/03_ranking.sql
+  Consulta comentada para uso no BigQuery ou Looker Studio.
+
+sql/dashboard/04_evolucao.sql
+  Consulta comentada para uso no BigQuery ou Looker Studio.
+
+src/__init__.py
+  Marca src como pacote Python.
+
+src/batch/__init__.py
+  Marca o módulo batch como pacote Python.
+
+src/batch/ingest_basedosdados.py
+  Implementa snapshots das tabelas pequenas e cria/reutiliza alunos_amostra uma única vez.
+
+src/common/__init__.py
+  Marca o módulo comum como pacote Python.
+
+src/common/bigquery_utils.py
+  Funções de configuração de jobs BigQuery e formatação de nomes de tabela.
+
+src/common/config.py
+  Lê o .env e o catálogo YAML em objetos usados pela aplicação.
+
+src/common/logging_utils.py
+  Produz logs JSON para terminal e Cloud Logging.
+
+src/quality/__init__.py
+  Marca o módulo de qualidade como pacote Python.
+
+src/quality/run_checks.py
+  Executa regras adicionais de duplicidade, faixa e integridade e grava os resultados.
+
+src/streaming/__init__.py
+  Marca o módulo streaming como pacote Python.
+
+src/streaming/models.py
+  Contrato Pydantic dos eventos e validações de UF, município, percentual e data.
+
+src/streaming/pipeline.py
+  Pipeline Apache Beam que lê Pub/Sub e separa válidos e rejeitados no BigQuery.
+
+src/streaming/publisher.py
+  Gera e publica eventos simulados, incluindo inválidos opcionais.
+
+terraform/main.tf
+  Cria APIs, bucket, datasets, Pub/Sub, contas de serviço, alertas e orçamento.
+
+terraform/outputs.tf
+  Mostra IDs e nomes úteis após terraform apply.
+
+terraform/providers.tf
+  Configura os providers Google e Google Beta.
+
+terraform/schemas/eventos_indicador.json
+  Esquema BigQuery da tabela de eventos válidos.
+
+terraform/schemas/eventos_rejeitados.json
+  Esquema BigQuery da dead-letter de eventos inválidos.
+
+terraform/terraform.tfvars.example
+  Modelo em que o aluno insere project ID, bucket, billing e orçamento.
+
+terraform/variables.tf
+  Declara as variáveis aceitas pelo Terraform.
+
+terraform/versions.tf
+  Define versões mínimas do Terraform e providers.
+
+tests/test_sources_config.py
+  Testa se as fontes obrigatórias e a amostra física estão configuradas.
+
+tests/test_streaming_models.py
+  Testa as validações do contrato de eventos.
+
+
+FERRAMENTAS E SERVIÇOS
+
+Google Cloud Platform
+  Nuvem escolhida para hospedar a demonstração temporária.
+
+BigQuery
+  Consulta as fontes públicas e armazena as camadas Bronze, Silver, Gold e Monitoring.
+
+Cloud Storage
+  Armazena Parquet opcional e arquivos temporários do Dataflow.
+
+Pub/Sub
+  Recebe as mensagens simuladas de atualização do indicador.
+
+Dataflow
+  Executa o pipeline streaming definido com Apache Beam.
+
+Apache Beam
+  Implementa a leitura, validação e separação de eventos válidos e rejeitados.
+
+Dataform
+  Compila e executa SQLX, dependências e assertions das camadas Silver e Gold.
+
+Terraform
+  Cria e destrói a infraestrutura de forma reproduzível.
+
+Cloud Run Jobs
+  Opção gerenciada para executar a ingestão batch em contêiner.
+
+Cloud Scheduler
+  Agenda o Cloud Run Job quando a execução recorrente é demonstrada.
+
+Cloud Monitoring
+  Recebe o alerta de backlog do Pub/Sub.
+
+Artifact Registry
+  Armazena a imagem Docker do job batch.
+
+Python
+  Implementa ingestão, configuração, streaming, validação e testes.
+
+Pydantic
+  Valida o contrato dos eventos streaming.
+
+Node.js, npm e npx
+  Executam o CLI do Dataform.
+
+VS Code
+  Ambiente local usado para editar e executar o projeto.
+
+Git e GitHub
+  Versionam o código e demonstram branches, commits e Pull Requests.
+
+PowerShell
+  Executa comandos no Windows e o script principal de exclusão.
+
+Git Bash
+  Executa os arquivos .sh no Windows.
+
+Looker Studio
+  Pode consumir as consultas da pasta sql/dashboard para criar visualizações.
