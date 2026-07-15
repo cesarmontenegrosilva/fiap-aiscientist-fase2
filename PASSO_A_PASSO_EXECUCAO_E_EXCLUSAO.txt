@@ -1,0 +1,115 @@
+PASSO A PASSO DE EXECUÇÃO E EXCLUSÃO COMPLETA NO GCP
+
+PARTE A - PREPARAÇÃO
+
+1. Extraia o repositório e abra a pasta no VS Code.
+2. Abra um terminal PowerShell.
+3. Faça login:
+gcloud auth login
+gcloud auth application-default login
+4. Confira as contas de faturamento disponíveis:
+gcloud billing accounts list
+5. Abra um terminal Git Bash e execute:
+bash scripts/setup_gcp.sh SEU_PROJECT_ID SEU_PROJECT_ID-alfabetizacao-lake SUA_BILLING_ACCOUNT
+6. O setup cria o projeto quando necessário, habilita APIs e gera:
+.env
+terraform/terraform.tfvars
+configuração do Dataform
+
+PARTE B - DEPENDÊNCIAS
+
+1. No PowerShell:
+python -m venv .venv
+2. Ative:
+.\.venv\Scripts\Activate.ps1
+3. Instale:
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+4. Teste:
+pytest
+
+PARTE C - INFRAESTRUTURA
+
+1. Inicialize:
+terraform -chdir=terraform init
+2. Revise:
+terraform -chdir=terraform plan
+3. Crie:
+terraform -chdir=terraform apply
+4. Digite yes quando solicitado.
+
+PARTE D - BRONZE COM AMOSTRA FÍSICA
+
+1. Execute primeiro sem Parquet:
+python scripts\transferir_dados_inep.py --project-id SEU_PROJECT_ID --sem-parquet
+2. O script copia integralmente as tabelas pequenas.
+3. O script cria uma única vez:
+SEU_PROJECT_ID.alfabetizacao_bronze.alunos_amostra
+4. A amostra possui até 500 linhas e usa TABLESAMPLE para reduzir a leitura inicial.
+5. Rode o mesmo comando novamente e confira a mensagem de reutilização.
+6. Não use --recriar-amostra em toda execução, pois isso gera nova leitura da origem.
+
+PARTE E - SILVER E GOLD
+
+1. Abra o Git Bash.
+2. Execute:
+bash scripts/run_dataform.sh
+3. Confira no BigQuery:
+alfabetizacao_silver
+alfabetizacao_gold
+alfabetizacao_assertions
+4. Execute os checks complementares no PowerShell:
+python -m src.quality.run_checks
+
+PARTE F - STREAMING SIMULADO
+
+1. No Git Bash, inicie:
+bash scripts/run_dataflow.sh
+2. No PowerShell, publique mensagens:
+python -m src.streaming.publisher --count 30 --interval 1 --invalid-rate 0.10
+3. Confira as tabelas:
+alfabetizacao_bronze.eventos_indicador
+alfabetizacao_bronze.eventos_rejeitados
+4. Encerre o Dataflow logo após a demonstração:
+bash scripts/stop_dataflow.sh
+
+PARTE G - SIMULAR A EXCLUSÃO
+
+No PowerShell:
+.\scripts\limpar_gcp.ps1 `
+  -ProjectId SEU_PROJECT_ID `
+  -Bucket SEU_PROJECT_ID-alfabetizacao-lake `
+  -DeleteProject `
+  -DryRun
+
+O modo DryRun mostra os comandos e não apaga nada.
+
+PARTE H - APAGAR RECURSOS E PROJETO
+
+Use somente quando o projeto tiver sido criado exclusivamente para este evento.
+
+.\scripts\limpar_gcp.ps1 `
+  -ProjectId SEU_PROJECT_ID `
+  -Bucket SEU_PROJECT_ID-alfabetizacao-lake `
+  -DeleteProject
+
+Digite exatamente:
+EXCLUIR PROJETO SEU_PROJECT_ID
+
+O script executa nesta ordem:
+1. remove Scheduler;
+2. cancela Dataflow;
+3. cancela e remove Cloud Run;
+4. executa terraform destroy quando houver state;
+5. remove Pub/Sub;
+6. remove datasets BigQuery;
+7. remove objetos, versões e bucket;
+8. remove Artifact Registry e contas de serviço;
+9. solicita a exclusão do projeto.
+
+PARTE I - CONFERIR
+
+Use:
+gcloud projects list --filter="projectId=SEU_PROJECT_ID lifecycleState:DELETE_REQUESTED"
+
+O projeto deve aparecer com estado DELETE_REQUESTED. A exclusão do projeto no GCP é uma solicitação administrada pelo Google e pode permanecer recuperável durante o período definido pela plataforma.
