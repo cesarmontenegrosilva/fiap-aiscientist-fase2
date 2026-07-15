@@ -1,5 +1,6 @@
 # Tech Challenge - Pipeline Híbrido de Alfabetização no GCP
 
+Link para o video: 
 Este repositório apresenta a solução que eu desenvolvi para o Tech Challenge da Fase 2. O projeto integra dados públicos sobre alfabetização no Brasil, organiza as informações nas camadas Bronze, Silver e Gold e demonstra ingestão batch e streaming no Google Cloud Platform.
 
 A documentação foi escrita de forma simples, como um registro do que eu implementei, das decisões que tomei e dos comandos necessários para reproduzir a demonstração.
@@ -407,14 +408,10 @@ tests/                  testes unitários
 ```
 
 ## 17. Documentos entregáveis
-
 - `docs/deliverables/Manual_Implementacao_Tech_Challenge_Alfabetizacao_GCP.docx`;
-- `docs/deliverables/Apresentacao_Tech_Challenge_Alfabetizacao_GCP.pptx`;
-- `docs/VIDEO_SCRIPT.md`;
 - `docs/FONTES_DADOS_URLS.txt`;
 - `docs/ONDE_COLOCAR_PROJECT_ID.txt`;
 - `docs/PASSO_A_PASSO_EXECUCAO_E_EXCLUSAO.txt`;
-- `docs/MAPA_ARQUIVOS_E_FERRAMENTAS.txt`.
 
 ## 18. Observação sobre a amostra
 
